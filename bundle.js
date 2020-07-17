@@ -1,10 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
-
 function removeAllRows() {
     rowsToRemove = document.getElementsByClassName('rows');
-    for(var i = 0; i< rowsToRemove.length; i++) {
+    for (var i = 0; i < rowsToRemove.length; i++) {
         document.getElementById(rowsToRemove.item(i).id).remove();
     }
 }
@@ -13,11 +10,15 @@ function setAllEnabled(boolVal) {
     document.getElementById('allEnabled').checked = boolVal;
 }
 
-async function updateUIFromSettings() {
-    storedSettings = await browser.storage.managed.get().then('settingsInJson');
-    removeAllRows();
-    setAllEnabled(storedSettings.allEnabled);
-    storedSettings.rows.forEach(rowJson => addRow(rowJson))
+function updateUIFromSettings() {
+    (browser.storage.local.get().then('settingsInJson').then(
+        storage => {
+            storedSettings = storage.settingsInJson;
+            removeAllRows();
+            setAllEnabled(storedSettings.allEnabled);
+            storedSettings.rows.forEach(rowJson => addRow(rowJson))
+        }
+    ));
 }
 
 function onError() {
@@ -28,8 +29,6 @@ document.addEventListener('DOMContentLoaded', updateUIFromSettings);
 
 
 
-
-},{}],3:[function(require,module,exports){
 const {v4: uuidv4} = require('uuid');
 
 function disableEnableAllCheckbox(e) {
@@ -118,8 +117,6 @@ function toggleAllDisableCheckboxes(e) {
 document.getElementById('allEnabled').addEventListener('click', e => toggleAllDisableCheckboxes(e));
 
 
-
-},{"uuid":6}],4:[function(require,module,exports){
 function isEmpty(rowJson) {
     if(rowJson.inputRegex==="" || rowJson.outputRegex==="") {
         return true;
@@ -160,7 +157,7 @@ function getInputDataJson() {
 
 function storeSettings(e) {
     var settingsInJson = getInputDataJson();
-    browser.storage.sync.set({
+    browser.storage.local.set({
         'settingsInJson': settingsInJson
     });
     e.preventDefault();
@@ -168,7 +165,7 @@ function storeSettings(e) {
 
 document.getElementById("submitForm").addEventListener("click", storeSettings);
 
-},{}],5:[function(require,module,exports){
+},{"uuid":3}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -195,7 +192,7 @@ function bytesToUuid(buf, offset_) {
 
 var _default = bytesToUuid;
 exports.default = _default;
-},{}],6:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -235,7 +232,7 @@ var _v3 = _interopRequireDefault(require("./v4.js"));
 var _v4 = _interopRequireDefault(require("./v5.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./v1.js":10,"./v3.js":11,"./v4.js":13,"./v5.js":14}],7:[function(require,module,exports){
+},{"./v1.js":7,"./v3.js":8,"./v4.js":10,"./v5.js":11}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -459,7 +456,7 @@ function md5ii(a, b, c, d, x, s, t) {
 
 var _default = md5;
 exports.default = _default;
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -481,7 +478,7 @@ function rng() {
 
   return getRandomValues(rnds8);
 }
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -583,7 +580,7 @@ function sha1(bytes) {
 
 var _default = sha1;
 exports.default = _default;
-},{}],10:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -691,7 +688,7 @@ function v1(options, buf, offset) {
 
 var _default = v1;
 exports.default = _default;
-},{"./bytesToUuid.js":5,"./rng.js":8}],11:[function(require,module,exports){
+},{"./bytesToUuid.js":2,"./rng.js":5}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -708,7 +705,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const v3 = (0, _v.default)('v3', 0x30, _md.default);
 var _default = v3;
 exports.default = _default;
-},{"./md5.js":7,"./v35.js":12}],12:[function(require,module,exports){
+},{"./md5.js":4,"./v35.js":9}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -793,7 +790,7 @@ function _default(name, version, hashfunc) {
   generateUUID.URL = URL;
   return generateUUID;
 }
-},{"./bytesToUuid.js":5}],13:[function(require,module,exports){
+},{"./bytesToUuid.js":2}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -831,7 +828,7 @@ function v4(options, buf, offset) {
 
 var _default = v4;
 exports.default = _default;
-},{"./bytesToUuid.js":5,"./rng.js":8}],14:[function(require,module,exports){
+},{"./bytesToUuid.js":2,"./rng.js":5}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -848,4 +845,4 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const v5 = (0, _v.default)('v5', 0x50, _sha.default);
 var _default = v5;
 exports.default = _default;
-},{"./sha1.js":9,"./v35.js":12}]},{},[1,2,3,4]);
+},{"./sha1.js":6,"./v35.js":9}]},{},[1]);

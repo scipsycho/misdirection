@@ -9,7 +9,7 @@
   },
   "background": {
     "scripts": [
-      "./background/requestHandler.js"
+      "./scripts/background/requestHandler.js"
     ]
   },
   "options_ui": {

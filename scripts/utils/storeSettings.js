@@ -38,7 +38,7 @@ function getInputDataJson() {
 
 function storeSettings(e) {
     var settingsInJson = getInputDataJson();
-    browser.storage.sync.set({
+    browser.storage.local.set({
         'settingsInJson': settingsInJson
     });
     e.preventDefault();
