@@ -2,7 +2,6 @@
   "manifest_version": 2,
   "name": "Misdirection",
   "version": "0.0.1",
-
   "description": "Map domain-names using regex",
   "icons": {
     "48": "./resources/icon.png"
@@ -16,11 +15,18 @@
     "page": "./index.html",
     "browser_style": true
   },
-  "permissions": ["proxy", "storage", "<all_urls>"],
+  "permissions": [
+    "proxy",
+    "storage",
+    "<all_urls>"
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "misdirection@mozilla.org",
       "strict_min_version": "57.0a1"
     }
+  },
+  "omnibox": {
+    "keyword": "md"
   }
 }

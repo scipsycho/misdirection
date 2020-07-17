@@ -126,11 +126,20 @@ function isEmpty(rowJson) {
 
 function getRowJson(rowElement) {
     var id = rowElement.id;
+    var inputRegex = document.getElementById(`inputRegex_${id}`).value;
+    let inputRegexMatcher;
+    try {
+        inputRegexMatcher = new RegExp(inputRegex);
+    } catch(e) {
+        console.warn(`${inputRegex} is not a valid regular expression. Ignoring value.`)
+        inputRegex = ""
+    }
     return {
         "id": id,
         "isEnabled": document.getElementById(`disableRowCheckBox_${id}`).checked,
-        "inputRegex": document.getElementById(`inputRegex_${id}`).value,
-        "outputRegex": document.getElementById(`outputRegex_${id}`).value
+        "inputRegex": inputRegex,
+        "outputRegex": document.getElementById(`outputRegex_${id}`).value,
+        "inputRegexMatcher": inputRegexMatcher
     }
 }
 
