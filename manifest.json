@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Misdirection",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Map domain-names using regex",
   "icons": {
     "48": "./resources/icon_48.png",
