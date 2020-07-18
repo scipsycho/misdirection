@@ -27,7 +27,17 @@ function addSearchSuggestions(text, addSuggestions) {
                     }
                     var inputRegexMatcher = regexRow.inputRegexMatcher;
                     if (inputRegexMatcher.test(text)) {
-                        var newUrl = text.replace(inputRegexMatcher, regexRow.outputRegex);
+                        let newUrl;
+                        try {
+                            newUrl = text.match(inputRegexMatcher)[0].replace(inputRegexMatcher, regexRow.outputRegex);
+                        } catch (e) {
+                            if(e instanceof TypeError) {
+                                console.log(`${regexRow.inputRegex} didn't match for ${text}`);
+                                continue;
+                            } else {
+                                throw e;
+                            }
+                        }
                         suggestions.push({
                             content: newUrl,
                             description: newUrl
