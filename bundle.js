@@ -1,4 +1,9 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const defaultSettings = {
+    allEnabled: true,
+    rows: []
+}
+
 function removeAllRows() {
     rowsToRemove = document.getElementsByClassName('rows');
     for (var i = 0; i < rowsToRemove.length; i++) {
@@ -10,19 +15,26 @@ function setAllEnabled(boolVal) {
     document.getElementById('allEnabled').checked = boolVal;
 }
 
-function updateUIFromSettings() {
-    (browser.storage.local.get().then('settingsInJson').then(
-        storage => {
-            storedSettings = storage.settingsInJson;
-            removeAllRows();
-            setAllEnabled(storedSettings.allEnabled);
-            storedSettings.rows.forEach(rowJson => addRow(rowJson))
-        }
-    ));
+function updateUI(storage) {
+    let storedSettings;
+
+    if (!('settingsInJson' in storage)) {
+        console.log("No data found in browser storage. Using default values.");
+        storedSettings = defaultSettings;
+    } else {
+        storedSettings = storage.settingsInJson;
+    }
+
+    removeAllRows();
+    setAllEnabled(storedSettings.allEnabled);
+    storedSettings.rows.forEach(rowJson => addRow(rowJson))
 }
 
-function onError() {
-    console.error(e);
+function updateUIFromSettings() {
+    browser.storage.local.get().then('settingsInJson').then(
+        storage => updateUI(storage),
+        () => console.error("Error retriveing data from browser storage.")
+    );
 }
 
 document.addEventListener('DOMContentLoaded', updateUIFromSettings);

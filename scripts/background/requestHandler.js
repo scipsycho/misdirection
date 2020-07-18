@@ -1,19 +1,42 @@
+function ifEmptyGetDefaultSettings(storage) {
+    if (!('settingsInJson' in storage)) {
+        console.log("No mapping yet configured. So no suggestions. :shrug")
+        return {
+            allEnabled: true,
+            rows: []
+        }
+    } else {
+        return storage.settingsInJson;
+    }
+}
+
 function addSearchSuggestions(text, addSuggestions) {
     browser.storage.local.get().then('settingsInJson').then(
         storage => {
             let suggestions = []
-
-            var regexRows = storage.settingsInJson.rows;
-            for (var i = 0; i < regexRows.length; i++) {
-                var regexRow = regexRows[i];
-                var inputRegexMatcher = regexRow.inputRegexMatcher;
-                if (inputRegexMatcher.test(text)) {
-                    var newUrl = text.replace(inputRegexMatcher, regexRow.outputRegex);
-                    suggestions.push({
-                        content: newUrl,
-                        description: newUrl
-                    });
+            let storedSettings = ifEmptyGetDefaultSettings(storage);
+            try {
+                if (!storedSettings.allEnabled) {
+                    return;
                 }
+                var regexRows = storedSettings.rows;
+                for (var i = 0; i < regexRows.length; i++) {
+                    var regexRow = regexRows[i];
+                    if (!regexRow.isEnabled) {
+                        continue;
+                    }
+                    var inputRegexMatcher = regexRow.inputRegexMatcher;
+                    if (inputRegexMatcher.test(text)) {
+                        var newUrl = text.replace(inputRegexMatcher, regexRow.outputRegex);
+                        suggestions.push({
+                            content: newUrl,
+                            description: newUrl
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn("Something went wrong while processing the settings. No suggestions will be loaded!");
+                return;
             }
             if (suggestions.length > 0) {
                 addSuggestions(suggestions);
