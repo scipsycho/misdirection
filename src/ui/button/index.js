@@ -36,7 +36,7 @@ export class SubmitButton extends Component {
     render() {
         const {onClickHandler} = this.props;
         return (<div>
-            <Button variant={"contained"} color={"primary"} onClick={onClickHandler}
+            <Button variant={"contained"} color={"primary"} onClick={() => onClickHandler("submit button clicked")}
                     startIcon={<SaveIcon/>}>Save</Button>
         </div>);
     }

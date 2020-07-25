@@ -1,26 +1,50 @@
 import React, {Component} from "react";
-import {fetchSettings, mapSettingsToState, storeSettings} from "../../services/settingsStore";
+import {BROWSER_STORAGE_KEY, fetchSettings, mapSettingsToState, storeSettings} from "../../services/settingsStore";
 import {Checkbox} from "../switch";
 import {Rows} from "../rows";
 import {AddButton, SubmitButton} from "../button";
 import {v4 as uuid} from "uuid";
 import {getIndexToIdMap} from "../../services/utils";
 
+const defaultState = {
+    isEnabled: true,
+    totalRows: 0,
+    rows: {}
+}
 
 export class Form extends Component {
 
     constructor(props) {
         super(props);
-        this.state = mapSettingsToState(fetchSettings())
+        this.state = defaultState
+        this.setStateFromStore();
     }
+
+    setStateFromStore = (overrideState = {}) =>
+        fetchSettings(
+            newState => {
+                console.debug("Setting state from storage.")
+                this.setState(({
+                    ...newState,
+                    ...overrideState
+                }));
+            },
+            () => {
+                console.warn("Error while retrieving data from store. Using default settings.")
+                this.setState(defaultState);
+            }
+        );
 
     toggleIsEnabled = () => {
         if (this.state.isEnabled) {
-            this.setState(prevState => ({
+            this.setState({
                 isEnabled: false
-            }))
+            })
+            this.validateAndSubmitInput("toggle turned off.")
         } else {
-            this.setState(mapSettingsToState(fetchSettings()))
+            this.setStateFromStore({
+                isEnabled: true
+            });
         }
     }
 
@@ -34,7 +58,7 @@ export class Form extends Component {
                 outputRegexIsValid: true,
                 index: prevState.totalRows
             }
-            console.log("Added rows", {
+            console.debug("Added rows", {
                 isEnabled: prevState.isEnabled,
                 totalRows: prevState.totalRows + 1,
                 rows: newRows
@@ -54,14 +78,13 @@ export class Form extends Component {
             }
             new RegExp(regex);
         } catch {
-            console.log("input regex is invalid.");
             return true;
         }
         return false;
     }
 
     reIndexState = (oldRows, totalRows) => {
-        console.log("Reindexing....")
+        console.debug("Reindexing....")
         const indexToIdMap = getIndexToIdMap(oldRows)
         let oldIndex = 0;
         let newIndex = 0;
@@ -88,7 +111,7 @@ export class Form extends Component {
             let newRows = prevState.rows;
             delete newRows[id]
             newRows = this.reIndexState(newRows, prevState.totalRows)
-            console.log("Deleted row", {
+            console.debug("Deleted row", {
                 isEnabled: prevState.isEnabled,
                 totalRows: prevState.totalRows - 1,
                 rows: newRows
@@ -101,54 +124,47 @@ export class Form extends Component {
         })
     }
 
-    validateInput = () => {
+    validateAndSubmitInput = (action) => {
         let isValid = true;
 
         this.setState(prevState => {
-            let newRows = prevState.rows
+                let newRows = prevState.rows
 
-            Object.keys(newRows).map(
-                id => {
-                    if (this.isRegexInvalid(newRows[id].inputRegex)) {
-                        console.debug(newRows[id].inputRegex, "is invalid")
-                        newRows[id].inputRegexIsValid = false
-                        isValid = false;
-                    } else {
-                        newRows[id].inputRegexIsValid = true
+                Object.keys(newRows).map(
+                    id => {
+                        if (this.isRegexInvalid(newRows[id].inputRegex)) {
+                            newRows[id].inputRegexIsValid = false
+                            isValid = false;
+                        } else {
+                            newRows[id].inputRegexIsValid = true
+                        }
+                        if (this.isRegexInvalid(newRows[id].outputRegex)) {
+                            newRows[id].outputRegexIsValid = false
+                            isValid = false;
+                        } else {
+                            newRows[id].outputRegexIsValid = true
+                        }
                     }
-                    if (this.isRegexInvalid(newRows[id].outputRegex)) {
-                        newRows[id].outputRegexIsValid = false
-                        isValid = false;
-                    } else {
-                        newRows[id].outputRegexIsValid = true
-                    }
+                )
+
+                return ({
+                    ...prevState,
+                    rows: newRows
+                })
+            },
+            () => {
+                console.debug(`Input is valid: ${isValid}`)
+                if (isValid) {
+                    storeSettings(this.state, action);
                 }
-            )
-
-            return ({
-                ...prevState,
-                rows: newRows
             })
-        })
-
-        console.log("Input is validated: ", isValid)
-        return isValid;
-    }
-
-    submitForm = () => {
-        if (this.validateInput()) {
-            console.log(this.state)
-            storeSettings();
-        } else {
-            console.log("Invalid input.")
-        }
     }
 
     updateTextField = (id, field, value) => {
         this.setState(prevState => {
             let newRows = prevState.rows;
             newRows[id][field] = value;
-            console.log("Updated rows", {
+            console.debug("Updated rows", {
                 isEnabled: prevState.isEnabled,
                 totalRows: prevState.totalRows,
                 rows: newRows
@@ -163,17 +179,17 @@ export class Form extends Component {
 
     moveRow = (id, by) => {
         this.setState(prevState => {
-            let { rows: newRows, ...rest} = prevState
+            let {rows: newRows, ...rest} = prevState
             const index = newRows[id].index
             let otherRowId
             Object.keys(newRows).map(
                 id => {
-                    if(newRows[id].index === index + by) {
+                    if (newRows[id].index === index + by) {
                         otherRowId = id
                     }
                 }
             )
-            newRows[id].index =  index + by;
+            newRows[id].index = index + by;
             newRows[otherRowId].index = index;
             console.debug("Moved row", {
                 ...rest,
@@ -200,7 +216,7 @@ export class Form extends Component {
                             updateFieldHandler={this.updateTextField}
                             moveRowHandler={this.moveRow}
                         /> : ""}
-                    {this.state.isEnabled ? <SubmitButton onClickHandler={this.submitForm}/> : ""}
+                    {this.state.isEnabled ? <SubmitButton onClickHandler={this.validateAndSubmitInput}/> : ""}
                 </form>
             </div>
         )
